@@ -50,10 +50,6 @@
             border: 1px solid rgba(48, 54, 61, 0.7);
         }
 
-        .cyber-glow-accent {
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-        }
-
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -97,7 +93,7 @@
                     <h1 class="font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-cyber-accent via-cyan-200 to-cyber-pink bg-clip-text text-transparent">
                         ChemQuest <span class="text-xs px-2 py-0.5 rounded bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/30 uppercase tracking-widest font-bold">Pro</span>
                     </h1>
-                    <p class="text-xs text-gray-400 hidden sm:block">Sistem Asesmen Harian Kimia (25 Soal CP1-CP7)</p>
+                    <p class="text-xs text-gray-400 hidden sm:block">Sistem Asesmen Harian Kimia (25 Soal Full)</p>
                 </div>
             </div>
 
@@ -127,7 +123,7 @@
                     </span>
                     <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight">Evaluasi Pembelajaran Kimia</h2>
                     <p class="text-gray-400 text-sm md:text-base">
-                        Isi identitas Anda. Soal akan acak sebanyak 25 nomor mencakup seluruh Capaian Pembelajaran (CP1 s.d CP7).
+                        Isi identitas Anda. Soal terdiri dari 25 nomor yang mencakup seluruh Capaian Pembelajaran (CP1 s.d CP7).
                     </p>
                 </div>
 
@@ -162,10 +158,6 @@
         <section id="screen-quiz" class="hidden space-y-6">
             <div class="cyber-glass rounded-2xl p-4 border border-cyber-border flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-1 bg-red-500/10 border border-red-500/30 px-3 py-1.5 rounded-xl">
-                        <i data-lucide="heart" class="w-5 h-5 text-red-500 fill-red-500"></i>
-                        <span id="lives-count" class="font-bold text-red-400 text-sm">3</span>
-                    </div>
                     <div class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl">
                         <i data-lucide="zap" class="w-5 h-5 text-amber-400 fill-amber-400"></i>
                         <span id="streak-count" class="font-bold text-amber-300 text-sm">0x Combo</span>
@@ -245,7 +237,7 @@
                             </div>
                             <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
                                 <span class="text-xs text-gray-400 block font-semibold">Integritas (Anti-Cheat)</span>
-                                <span id="stat-integrity" class="text-base font-bold text-emerald-400">100% (0 Violations)</span>
+                                <span id="stat-integrity" class="text-base font-bold text-emerald-400">100% (0 Pelanggaran)</span>
                             </div>
                             <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
                                 <span class="text-xs text-gray-400 block font-semibold">Waktu Pengerjaan</span>
@@ -264,7 +256,7 @@
 
                 <div class="flex justify-center gap-4">
                     <button onclick="location.reload()" class="px-6 py-3 bg-cyber-card border border-cyber-border text-white font-bold rounded-xl hover:border-cyber-accent transition">
-                        Ulangi Tes
+                        Selesai / Ulangi Tes
                     </button>
                 </div>
             </div>
@@ -274,12 +266,12 @@
 
     <!-- Footer -->
     <footer class="w-full text-center py-4 border-t border-cyber-border/40 text-xs text-gray-500">
-        ChemQuest Pro &copy; 2026 - Asesmen Harian Kimia Integratif Kurikulum Merdeka
+        ChemQuest Pro &copy; Asesmen Harian Kimia Integratif Kurikulum Merdeka
     </footer>
 
-    <!-- GAME LOGIC & AUTOMATIC GOOGLE FORM SUBMIT script -->
+    <!-- GAME LOGIC & AUTOMATIC GOOGLE FORM SUBMIT SCRIPT -->
     <script>
-        // INTEGRASI GOOGLE FORM LENGKAP MILIK GURU
+        // KONFIGURASI GOOGLE FORM GURU
         const gformConfig = {
             formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScjPRZfl0BOi2oyZ8rzjLz4u_pmR-i0MaOhPFtYtcZoBlc_cA/formResponse",
             entryName: "entry.2069567566",
@@ -290,13 +282,13 @@
             entryDetail: "entry.1196923682"
         };
 
-        // BANK SOAL KIMIA UTUM (35 SOAL CP1 - CP7)
+        // BANK SOAL KIMIA (CP1 - CP7)
         const masterQuestions = [
             // CP1: Hakikat Materi & Partikel Penyusun
             { id: 1, cp: "CP1", text: "Air (H₂O) dan hidrogen peroksida (H₂O₂) memiliki unsur penyusun yang sama, tetapi sifat yang berbeda. Fenomena ini menunjukkan bahwa...", options: ["Perbedaan jumlah partikel penyusun mengubah sifat materi secara mendasar", "Air adalah materi sedangkan hidrogen peroksida bukan materi", "Sifat materi hanya ditentukan oleh jenis unsur penyusunnya", "Keduanya merupakan wujud materi yang berbeda"], correct: 0, exp: "Jumlah atom/partikel penyusun menentukan struktur dan sifat molekul materi." },
             { id: 2, cp: "CP1", text: "Partikel subatom penyusun dasar atom yang bermuatan listrik negatif adalah...", options: ["Neutron", "Proton", "Elektron", "Positron"], correct: 2, exp: "Elektron bermuatan negatif (-1), proton positif (+1), dan neutron netral." },
             { id: 3, cp: "CP1", text: "Proses kapur barus yang menyublim di dalam lemari merupakan contoh perubahan...", options: ["Kimia karena menghasilkan zat baru", "Fisika karena hanya perubahan wujud tanpa zat baru", "Biologi karena dipengaruhi suhu", "Nuklir karena pemecahan partikel"], correct: 1, exp: "Menyublim adalah perubahan wujud padat ke gas tanpa membentuk zat kimia baru." },
-            { id: 4, cp: "CP1", text: "Gula yang dilarutkan dalam air panas termasuk perubahan fisika karena...", options: ["Terbentuk gelembung gas baru", "Terjadi perubahan warna secara permanen", "Sifat kimia gula dan air tetap sama serta dapat dipisahkan kembali", "Suhu larutan meningkat drastis"], correct: 2, exp: "Pelarutan tidak mengubah struktur molekul gula, zat dapat dipisahkan menguapkan air." },
+            { id: 4, cp: "CP1", text: "Gula yang dilarutkan dalam air panas termasuk perubahan fisika karena...", options: ["Terbentuk gelembung gas baru", "Terjadi perubahan warna secara permanen", "Sifat kimia gula dan air tetap sama serta dapat dipisahkan kembali", "Suhu larutan meningkat drastis"], correct: 2, exp: "Pelarutan tidak mengubah struktur molekul gula, zat dapat dipisahkan dengan menguapkan air." },
 
             // CP2: Perkembangan Model Atom & Struktur Dasar Atom
             { id: 5, cp: "CP2", text: "Model atom yang menggambarkan atom sebagai bola pejal yang tidak dapat dibagi lagi dikemukakan oleh...", options: ["John Dalton", "J.J. Thomson", "Ernest Rutherford", "Niels Bohr"], correct: 0, exp: "John Dalton menyatakan atom sebagai partikel terkecil berbentuk bola pejal." },
@@ -309,10 +301,10 @@
             { id: 10, cp: "CP3", text: "Ion Na⁺ (Nomor atom = 11, Nomor massa = 23) memiliki jumlah elektron sebanyak...", options: ["11", "12", "10", "23"], correct: 2, exp: "Ion Na⁺ melepas 1 elektron, sehingga jumlah elektron = 11 - 1 = 10." },
             { id: 11, cp: "CP3", text: "Pasangan spesi berikut yang merupakan isotop adalah...", options: ["¹²₆C dan ¹⁴₆C", "¹⁴₆C dan ¹⁴₇N", "²³₁₁Na dan ²⁴₁₂Mg", "¹⁶₈O²⁻ dan ¹⁹₉F⁻"], correct: 0, exp: "Isotop adalah atom-atom dengan nomor atom (jumlah proton) sama tetapi nomor massa berbeda." },
             { id: 12, cp: "CP3", text: "Ion Cl⁻ (Nomor atom = 17, Nomor massa = 35) mengandung...", options: ["17 proton, 18 neutron, 18 elektron", "17 proton, 35 neutron, 17 elektron", "18 proton, 17 neutron, 18 elektron", "17 proton, 18 neutron, 17 elektron"], correct: 0, exp: "Proton = 17, Neutron = 35 - 17 = 18. Ion Cl⁻ menangkap 1 elektron -> Elektron = 17 + 1 = 18." },
-            { id: 13, cp: "CP3", text: "Spesi atom ²⁴₁₂Mg²⁺ memiliki jumlah partikel penyusun subatom...", options: ["p=12, e=12, n=12", "p=12, e=10, n=12", "p=10, e=12, n=12", "p=12, e=14, n=12"], correct: 1, exp: "Proton = 12, Neutron = 24-12 = 12, Elektron = 12 - 2 (karena ion +2) = 10." },
+            { id: 13, cp: "CP3", text: "Spesi atom ²⁴₁₂Mg²⁺ memiliki jumlah partikel penyusun subatom...", options: ["p=12, e=12, n=12", "p=12, e=10, n=12", "p=10, e=12, n=12", "p=12, e=14, n=12"], correct: 1, exp: "Proton = 12, Neutron = 24-12 = 12, Elektron = 12 - 2 (ion +2) = 10." },
 
             // CP4: Konfigurasi Elektron & Elektron Valensi
-            { id: 14, cp: "CP4", text: "Konfigurasi elektron Bohr untuk atom Potassium/Kalium (₁₉K) adalah...", options: ["2, 8, 9", "2, 8, 8, 1", "2, 8, 7, 2", "2, 10, 7"], correct: 1, exp: "Pengisian kulit Bohr untuk 19K: K=2, L=8, M=8, N=1." },
+            { id: 14, cp: "CP4", text: "Konfigurasi elektron Bohr untuk atom Kalium (₁₉K) adalah...", options: ["2, 8, 9", "2, 8, 8, 1", "2, 8, 7, 2", "2, 10, 7"], correct: 1, exp: "Pengisian kulit Bohr untuk 19K: K=2, L=8, M=8, N=1." },
             { id: 15, cp: "CP4", text: "Jumlah elektron valensi dari atom dengan nomor atom 17 adalah...", options: ["5", "7", "8", "2"], correct: 1, exp: "Konfigurasi ₁₇Cl = 2, 8, 7. Elektron pada kulit terluar (valensi) = 7." },
             { id: 16, cp: "CP4", text: "Untuk mencapai kestabilan seperti gas mulia (oktet), atom ₁₆S cenderung...", options: ["Melepaskan 2 elektron", "Menangkap 2 elektron", "Melepaskan 6 elektron", "Menangkap 6 elektron"], correct: 1, exp: "₁₆S = 2, 8, 6. Butuh 2 elektron lagi untuk menjadi oktet (8)." },
             { id: 17, cp: "CP4", text: "Atom Aluminium (₁₃Al) mencapai kestabilan dengan cara...", options: ["Membentuk ion Al³⁺ dengan melepas 3 elektron valensinya", "Membentuk ion Al³⁻ dengan menangkap 3 elektron", "Menangkap 5 elektron", "Melepas 1 elektron"], correct: 0, exp: "₁₃Al = 2, 8, 3. Lebih mudah melepas 3 elektron valensi membentuk ion Al³⁺." },
@@ -333,7 +325,7 @@
             { id: 26, cp: "CP7", text: "Garam dapur (NaCl) dapat menghantarkan arus listrik saat dilarutkan dalam air karena...", options: ["Molekul NaCl terurai menjadi ion-ion bebas yang bergerak", "Air berikatan kovalen polar", "Elektron bergerak bebas dalam kristal", "NaCl berubah menjadi logam Natrium"], correct: 0, exp: "Dalam air, NaCl terionisasi menjadi Na⁺ dan Cl⁻ yang bebas bergerak membawa muatan." },
             { id: 27, cp: "CP7", text: "Mengapa minyak dan air tidak dapat menyatu?", options: ["Minta bersifat polar, air nonpolar", "Minyak bersifat nonpolar, air bersifat polar", "Massa jenis air lebih besar dari minyak", "Minyak mengandung ikatan ionik"], correct: 1, exp: "Sesuai prinsip 'like dissolves like', zat polar (air) tidak melarutkan nonpolar (minyak)." },
             { id: 28, cp: "CP7", text: "Fenomena es batu yang terapung di atas air disebabkan oleh...", options: ["Struktur ikatan hidrogen es membuat massa jenis es lebih kecil dari air", "Massa jenis es lebih besar dari air", "Es menyerap udara di sekitarnya", "Gas oksigen terperangkap di dalam es"], correct: 0, exp: "Struktur sangkar ikatan hidrogen pada es menyebabkan volumenya membesar sehingga massa jenis mengecil." },
-            { id: 29, cp: "CP7", text: "Lampu pijar diisi gas mulia (seperti Argon) dengan tujuan...", options: ["Membuat lampu lekas panas", "Mencegah kawat filamen bereaksi/terbakar karena gas mulia sangat stabil", "Memberi warna-warni indah", "Menghasilkan ikatan ionik baru"], correct: 1, exp: "Gas mulia memiliki konfigurasi oktet stabil (anert) sehingga tidak mudah bereaksi." },
+            { id: 29, cp: "CP7", text: "Lampu pijar diisi gas mulia (seperti Argon) dengan tujuan...", options: ["Membuat lampu lekas panas", "Mencegah kawat filamen bereaksi/terbakar karena gas mulia sangat stabil", "Memberi warna-warni indah", "Menghasilkan ikatan ionik baru"], correct: 1, exp: "Gas mulia memiliki konfigurasi oktet stabil (inert) sehingga tidak mudah bereaksi." },
             { id: 30, cp: "CP7", text: "Logam tembaga digunakan sebagai kabel listrik karena...", options: ["Memiliki ikatan logam dengan elektron yang bebas bergerak", "Memiliki ikatan kovalen polar yang kuat", "Merupakan unsur nonlogam berdensitas rendah", "Mudah larut dalam air"], correct: 0, exp: "Model lautan elektron pada ikatan logam membuat tembaga sangat baik menghantarkan listrik." }
         ];
 
@@ -341,13 +333,11 @@
         let currentQuestions = [];
         let currentQIndex = 0;
         let score = 0;
-        let lives = 3;
         let streak = 0;
         let maxStreak = 0;
         let cheatCount = 0;
         let timer = null;
         let timeLeft = 45;
-        let selectedOption = null;
         let isMuted = false;
         let startTime = 0;
         let endTime = 0;
@@ -417,7 +407,7 @@
             document.getElementById('proctor-warning-modal').classList.add('hidden');
         }
 
-        // START ASSESSMENT LOGIC (EXACTLY 25 QUESTIONS)
+        // START ASSESSMENT LOGIC (EXACTLY 25 QUESTIONS FULL)
         function startAssessment() {
             const name = document.getElementById('student-name').value.trim();
             const sClass = document.getElementById('student-class').value.trim();
@@ -437,7 +427,6 @@
             // Reset States
             currentQIndex = 0;
             score = 0;
-            lives = 3;
             streak = 0;
             maxStreak = 0;
             cheatCount = 0;
@@ -459,16 +448,14 @@
         }
 
         function loadQuestion() {
-            if (currentQIndex >= currentQuestions.length || lives <= 0) {
+            if (currentQIndex >= currentQuestions.length) {
                 finishAssessment();
                 return;
             }
 
             const q = currentQuestions[currentQIndex];
-            selectedOption = null;
 
             document.getElementById('question-progress-text').innerText = `Soal ${currentQIndex + 1} dari ${currentQuestions.length}`;
-            document.getElementById('lives-count').innerText = lives;
             document.getElementById('streak-count').innerText = `${streak}x Combo`;
             document.getElementById('question-cp-tag').innerText = `${q.cp}: ${getCPTitle(q.cp)}`;
             document.getElementById('question-text').innerText = q.text;
@@ -512,7 +499,7 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    selectOption(-1); // Time out = wrong
+                    selectOption(-1); // Kehabisan waktu = salah
                 }
             }, 1000);
         }
@@ -523,7 +510,7 @@
             const optionsContainer = document.getElementById('options-container');
             const buttons = optionsContainer.children;
 
-            // Disable all option buttons
+            // Nonaktifkan semua tombol pilihan agar tidak bisa diklik dua kali
             for (let btn of buttons) {
                 btn.onclick = null;
                 btn.classList.add('cursor-default');
@@ -536,19 +523,17 @@
                 if (streak > maxStreak) maxStreak = streak;
                 if (cpStats[q.cp]) cpStats[q.cp].correct++;
 
-                if (index >= 0) {
+                if (index >= 0 && buttons[index]) {
                     buttons[index].className = "w-full text-left p-4 rounded-xl bg-emerald-500/20 border-2 border-emerald-500 text-sm md:text-base text-emerald-200 transition flex items-center justify-between";
                 }
             } else {
                 playSound('wrong');
                 streak = 0;
-                lives--;
-                document.getElementById('lives-count').innerText = lives;
 
-                if (index >= 0) {
+                if (index >= 0 && buttons[index]) {
                     buttons[index].className = "w-full text-left p-4 rounded-xl bg-red-500/20 border-2 border-red-500 text-sm md:text-base text-red-200 transition flex items-center justify-between";
                 }
-                // Show correct answer
+                // Tunjukkan jawaban yang benar
                 if (buttons[q.correct]) {
                     buttons[q.correct].className = "w-full text-left p-4 rounded-xl bg-emerald-500/20 border-2 border-emerald-500 text-sm md:text-base text-emerald-200 transition flex items-center justify-between";
                 }
@@ -567,7 +552,7 @@
             loadQuestion();
         }
 
-        // FINISH & SUBMIT RESULTS
+        // FINISH & SUBMIT RESULTS TO GOOGLE FORM
         function finishAssessment() {
             clearInterval(timer);
             endTime = Date.now();
@@ -579,7 +564,7 @@
             document.getElementById('screen-quiz').classList.add('hidden');
             document.getElementById('screen-result').classList.remove('hidden');
 
-            // Compute statistics
+            // Hitung statistik nilai
             let totalCorrect = 0;
             Object.values(cpStats).forEach(st => totalCorrect += st.correct);
 
@@ -595,12 +580,12 @@
             document.getElementById('stat-integrity').innerText = `${integrityScore}% (${cheatCount} Violations)`;
             document.getElementById('stat-duration').innerText = durationStr;
 
-            // Trigger Confetti
+            // Trigger Confetti jika lulus
             if (accuracy >= 70 && typeof confetti === 'function') {
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             }
 
-            // Prepare Data Payload for Automatic Google Form Submit
+            // Payload Data Ujian
             const resultData = {
                 studentName: studentData.name,
                 studentClass: studentData.class,
@@ -611,26 +596,29 @@
                 cpSummary: cpStats
             };
 
-            // AUTO SUBMIT TO GURU GOOGLE SHEET
+            // KIRIM OTOMATIS KE GOOGLE FORM GURU
             submitToGoogleForm(resultData);
         }
 
-        // AUTOMATIC SUBMIT FUNCTION TO GOOGLE FORMS
+        // FUNGSI PENGIRIMAN DATA KE GOOGLE FORM GURU (100% TEMBUS METODE URLSearchParams)
         function submitToGoogleForm(examResult) {
             const statusBox = document.getElementById('submit-status-text');
 
-            const formData = new FormData();
-            formData.append(gformConfig.entryName, examResult.studentName);
-            formData.append(gformConfig.entryClass, examResult.studentClass);
-            formData.append(gformConfig.entryScore, examResult.finalScore);
-            formData.append(gformConfig.entryAccuracy, examResult.accuracy + "%");
-            formData.append(gformConfig.entryCheat, examResult.integrityScore + "% (" + examResult.cheatCount + " Violations)");
-            formData.append(gformConfig.entryDetail, JSON.stringify(examResult.cpSummary));
+            const params = new URLSearchParams();
+            params.append(gformConfig.entryName, examResult.studentName);
+            params.append(gformConfig.entryClass, examResult.studentClass);
+            params.append(gformConfig.entryScore, examResult.finalScore);
+            params.append(gformConfig.entryAccuracy, examResult.accuracy + "%");
+            params.append(gformConfig.entryCheat, examResult.integrityScore + "% (" + examResult.cheatCount + " Violations)");
+            params.append(gformConfig.entryDetail, JSON.stringify(examResult.cpSummary));
 
             fetch(gformConfig.formUrl, {
                 method: "POST",
                 mode: "no-cors",
-                body: formData
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: params.toString()
             }).then(() => {
                 if (statusBox) {
                     statusBox.className = "text-sm font-semibold text-emerald-400 flex items-center justify-center gap-2";
