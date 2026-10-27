@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemQuest Pro - Asesmen Harian Kimia Interaktif</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#0d1117',
+                            card: '#161b22',
+                            border: '#30363d',
+                            accent: '#00f2fe',
+                            pink: '#ff007f',
+                            green: '#00ff66',
+                            yellow: '#ffcc00',
+                            purple: '#7928ca'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        body {
+            background-color: #0d1117;
+            color: #e6edf3;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .cyber-glass {
+            background: rgba(22, 27, 34, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(48, 54, 61, 0.7);
+        }
+
+        .cyber-glow-accent {
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .cyber-glow-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+
+        .pulse-slow {
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f2fe;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative overflow-x-hidden antialiased">
+
+    <!-- Anti-Cheat Overlay Notice -->
+    <div id="proctor-warning-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="cyber-glass border-red-500 max-w-md w-full p-6 rounded-2xl text-center shadow-2xl relative border-2">
+            <div class="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/50">
+                <i data-lucide="shield-alert" class="w-8 h-8 animate-bounce"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-red-400 mb-2">Peringatan Kecurangan!</h3>
+            <p id="proctor-warning-msg" class="text-gray-300 text-sm mb-6">Terdeteksi meninggalkan layar ujian atau berpindah tab. Tindakan ini dicatat pada laporan integritas.</p>
+            <button onclick="resumeExam()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition shadow-lg shadow-red-600/30">
+                Saya Mengerti & Kembali Ujian
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="w-full cyber-glass sticky top-0 z-40 border-b border-cyber-border/50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyber-accent to-cyber-purple flex items-center justify-center text-black font-black text-xl shadow-lg shadow-cyber-accent/20">
+                    🧪
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-cyber-accent via-cyan-200 to-cyber-pink bg-clip-text text-transparent">
+                        ChemQuest <span class="text-xs px-2 py-0.5 rounded bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/30 uppercase tracking-widest font-bold">Pro</span>
+                    </h1>
+                    <p class="text-xs text-gray-400 hidden sm:block">Sistem Asesmen & Laboratorium Komputasi Kimia</p>
+                </div>
+            </div>
+
+            <!-- Status Badges & Controls -->
+            <div class="flex items-center gap-2 md:gap-4">
+                <!-- Cloud Integration Status Indicator -->
+                <div id="cloud-status-badge" onclick="openTeacherModal()" class="cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-semibold hover:bg-yellow-500/20 transition" title="Klik untuk Pengaturan Integrasi Google Forms">
+                    <span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
+                    <i data-lucide="cloud-off" class="w-3.5 h-3.5"></i>
+                    <span class="hidden md:inline">Mode Lokal (Belum Terhubung Form)</span>
+                </div>
+
+                <!-- Mute / Sound Switch -->
+                <button id="sound-btn" onclick="toggleSound()" class="p-2 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-accent hover:border-cyber-accent/50 transition">
+                    <i data-lucide="volume-2" id="sound-icon" class="w-5 h-5"></i>
+                </button>
+
+                <!-- Teacher Panel Button -->
+                <button onclick="openTeacherModal()" class="p-2 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-accent hover:border-cyber-accent/50 transition flex items-center gap-2 text-xs font-semibold px-3">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Panel Guru</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto w-full px-4 py-6 flex-grow flex flex-col justify-center">
+
+        <!-- SCREEN 1: Welcome & Student Identity -->
+        <section id="screen-welcome" class="space-y-6">
+            <div class="cyber-glass rounded-3xl p-6 md:p-10 border border-cyber-border shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-cyber-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-10 -top-10 w-64 h-64 bg-cyber-pink/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="text-center max-w-2xl mx-auto space-y-4 mb-8">
+                    <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-cyber-accent/10 text-cyber-accent border border-cyber-accent/30 tracking-wide uppercase">
+                        Asesmen Harian Kurikulum Merdeka
+                    </span>
+                    <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight">Uji Kompetensi Kimia Interaktif</h2>
+                    <p class="text-gray-400 text-sm md:text-base leading-relaxed">
+                        Selesaikan tantangan soal kimia (CP1 s.d CP7) dalam mode terkonfirmasi anti-kecurangan. Skor dan analisis kemampuan langsung tercatat otomatis.
+                    </p>
+                </div>
+
+                <!-- Registration Form -->
+                <div class="max-w-md mx-auto space-y-4 bg-cyber-dark/60 p-6 rounded-2xl border border-cyber-border">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nama Lengkap Siswa</label>
+                        <div class="relative">
+                            <i data-lucide="user" class="w-5 h-5 absolute left-3.5 top-3 text-gray-500"></i>
+                            <input type="text" id="student-name" placeholder="Masukkan nama lengkap..." class="w-full bg-cyber-card border border-cyber-border rounded-xl py-2.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-cyber-accent transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Kelas / Rombel</label>
+                        <div class="relative">
+                            <i data-lucide="graduation-cap" class="w-5 h-5 absolute left-3.5 top-3 text-gray-500"></i>
+                            <input type="text" id="student-class" placeholder="Contoh: X IPA 1 / XI-3..." class="w-full bg-cyber-card border border-cyber-border rounded-xl py-2.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-cyber-accent transition">
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="startAssessment()" class="w-full py-3.5 bg-gradient-to-r from-cyber-accent to-cyan-500 hover:from-cyan-400 hover:to-cyber-accent text-black font-extrabold text-base rounded-xl transition shadow-lg shadow-cyber-accent/20 flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                            Mulai Ujian Sekarang
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feature Badges -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-cyber-border/50 text-center">
+                    <div class="p-3 rounded-xl bg-cyber-dark/40 border border-cyber-border/40">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-cyber-accent mx-auto mb-1"></i>
+                        <span class="text-xs text-gray-300 font-semibold block">Anti-Cheat System</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cyber-dark/40 border border-cyber-border/40">
+                        <i data-lucide="heart" class="w-5 h-5 text-cyber-pink mx-auto mb-1"></i>
+                        <span class="text-xs text-gray-300 font-semibold block">3 Nyawa HP</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cyber-dark/40 border border-cyber-border/40">
+                        <i data-lucide="zap" class="w-5 h-5 text-cyber-yellow mx-auto mb-1"></i>
+                        <span class="text-xs text-gray-300 font-semibold block">Streak Combo</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cyber-dark/40 border border-cyber-border/40">
+                        <i data-lucide="cloud" class="w-5 h-5 text-cyber-green mx-auto mb-1"></i>
+                        <span class="text-xs text-gray-300 font-semibold block">Auto Cloud Submit</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: Quiz / Assessment Interface -->
+        <section id="screen-quiz" class="hidden space-y-6">
+            <!-- Quiz Status Bar -->
+            <div class="cyber-glass rounded-2xl p-4 border border-cyber-border flex flex-wrap justify-between items-center gap-4">
+                <!-- Hearts & Streak -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-1 bg-red-500/10 border border-red-500/30 px-3 py-1.5 rounded-xl">
+                        <i data-lucide="heart" class="w-5 h-5 text-red-500 fill-red-500"></i>
+                        <span id="lives-count" class="font-bold text-red-400 text-sm">3</span>
+                    </div>
+                    <div class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl">
+                        <i data-lucide="zap" class="w-5 h-5 text-amber-400 fill-amber-400"></i>
+                        <span id="streak-count" class="font-bold text-amber-300 text-sm">0x Combo</span>
+                    </div>
+                </div>
+
+                <!-- Timer & Progress -->
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <span class="text-xs text-gray-400 block font-semibold">Progres Soal</span>
+                        <span id="question-progress-text" class="text-sm font-bold text-cyber-accent">Soal 1 dari 15</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-cyber-card border border-cyber-border px-3 py-1.5 rounded-xl">
+                        <i data-lucide="clock" class="w-4 h-4 text-cyber-accent animate-pulse"></i>
+                        <span id="timer-display" class="font-mono font-bold text-white text-base">00:30</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="cyber-glass rounded-3xl p-6 md:p-8 border border-cyber-border shadow-2xl relative">
+                <!-- CP Tag & Integrity Badge -->
+                <div class="flex justify-between items-center mb-4">
+                    <span id="question-cp-tag" class="px-3 py-1 rounded-full text-xs font-bold bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/40">
+                        CP1: Materi & Partikel
+                    </span>
+                    <span id="integrity-status-tag" class="text-xs text-emerald-400 font-medium flex items-center gap-1">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Integritas: 100%
+                    </span>
+                </div>
+
+                <!-- Question Text -->
+                <h3 id="question-text" class="text-lg md:text-xl font-bold text-white leading-relaxed mb-6">
+                    Memuat pertanyaan...
+                </h3>
+
+                <!-- Options Grid -->
+                <div id="options-container" class="grid grid-cols-1 gap-3">
+                    <!-- Dynamic Options Inserted Here -->
+                </div>
+
+                <!-- Explanation Box (Shows after answering) -->
+                <div id="explanation-box" class="hidden mt-6 p-4 rounded-2xl bg-cyber-dark/80 border border-cyber-border space-y-2">
+                    <div class="flex items-center gap-2 text-cyber-accent font-bold text-sm">
+                        <i data-lucide="info" class="w-4 h-4"></i> Pembahasan Soal:
+                    </div>
+                    <p id="explanation-text" class="text-sm text-gray-300 leading-relaxed"></p>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="mt-6 pt-4 border-t border-cyber-border/50 flex justify-end">
+                    <button id="next-btn" onclick="nextQuestion()" disabled class="px-6 py-2.5 bg-gray-700 text-gray-400 font-bold rounded-xl transition flex items-center gap-2 cursor-not-allowed">
+                        <span>Soal Berikutnya</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: Final Score & Review -->
+        <section id="screen-result" class="hidden space-y-6">
+            <div class="cyber-glass rounded-3xl p-6 md:p-10 border border-cyber-border shadow-2xl text-center relative overflow-hidden">
+                <!-- Confetti Anchor -->
+                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-96 h-96 bg-cyber-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">
+                    Asesmen Selesai
+                </span>
+
+                <h2 class="text-3xl md:text-4xl font-black text-white mt-3">Hasil Evaluasi Pembelajaran</h2>
+                <p id="result-student-info" class="text-gray-400 text-sm mt-1">Siswa: - | Kelas: -</p>
+
+                <!-- Score Circle & Summary Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-8 items-center">
+                    <!-- Main Score Box -->
+                    <div class="cyber-glass p-6 rounded-2xl border border-cyber-accent/30 bg-gradient-to-b from-cyber-card to-cyber-dark flex flex-col items-center justify-center">
+                        <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">Skor Akhir</span>
+                        <div id="final-score" class="text-5xl md:text-6xl font-black text-cyber-accent tracking-tight">0</div>
+                        <span id="final-accuracy" class="text-xs text-gray-400 mt-2">Akurasi Jawaban: 0%</span>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="space-y-3 col-span-2">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
+                                <span class="text-xs text-gray-400 block font-semibold">Benar / Salah</span>
+                                <span id="stat-correct-wrong" class="text-base font-bold text-white">0 / 0</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
+                                <span class="text-xs text-gray-400 block font-semibold">Max Combo Streak</span>
+                                <span id="stat-max-streak" class="text-base font-bold text-amber-400">0x</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
+                                <span class="text-xs text-gray-400 block font-semibold">Integritas (Anti-Cheat)</span>
+                                <span id="stat-integrity" class="text-base font-bold text-emerald-400">100% (0 Pelanggaran)</span>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
+                                <span class="text-xs text-gray-400 block font-semibold">Waktu Pengerjaan</span>
+                                <span id="stat-duration" class="text-base font-bold text-cyan-300">00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CP Breakdown Table Matrix -->
+                <div class="text-left mt-8">
+                    <h4 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-cyber-accent"></i>
+                        Matriks Ketercapaian CP (Capaian Pembelajaran)
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-gray-300 border-collapse">
+                            <thead class="bg-cyber-dark text-gray-400 uppercase font-bold border-b border-cyber-border">
+                                <tr>
+                                    <th class="p-3">Kode CP</th>
+                                    <th class="p-3">Deskripsi Capaian</th>
+                                    <th class="p-3 text-center">Soal</th>
+                                    <th class="p-3 text-center">Benar</th>
+                                    <th class="p-3 text-right">Penguasaan (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cp-matrix-tbody" class="divide-y divide-cyber-border/40">
+                                <!-- CP Matrix Rows Inserted Dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Submit & Action Control Bar -->
+                <div class="mt-8 pt-6 border-t border-cyber-border flex flex-wrap gap-3 justify-center md:justify-between items-center">
+                    <div class="flex gap-2">
+                        <button onclick="exportCSV()" class="px-4 py-2.5 bg-cyber-card hover:bg-cyber-border border border-cyber-border text-xs font-bold rounded-xl transition flex items-center gap-2 text-gray-300">
+                            <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                        </button>
+                        <button onclick="window.print()" class="px-4 py-2.5 bg-cyber-card hover:bg-cyber-border border border-cyber-border text-xs font-bold rounded-xl transition flex items-center gap-2 text-gray-300">
+                            <i data-lucide="printer" class="w-4 h-4"></i> Cetak PDF
+                        </button>
+                    </div>
+
+                    <!-- Direct Google Form Cloud Submit Button -->
+                    <button id="send-teacher-btn" onclick="submitToGoogleForm()" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-sm rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Kirim Hasil ke Database Guru
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detailed Question Review Section -->
+            <div class="cyber-glass rounded-3xl p-6 md:p-8 border border-cyber-border space-y-4">
+                <h4 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5 text-cyber-accent"></i>
+                    Evaluasi & Review Pembahasan Soal
+                </h4>
+                <div id="review-list-container" class="space-y-4">
+                    <!-- Dynamic Detailed Reviews -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Panel Guru & Config Integrasi Cloud -->
+    <div id="teacher-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="cyber-glass border-cyber-accent/40 max-w-2xl w-full p-6 md:p-8 rounded-3xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeTeacherModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2.5 bg-cyber-accent/10 border border-cyber-accent/30 rounded-xl text-cyber-accent">
+                    <i data-lucide="settings" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Panel Pengaturan Guru & Cloud Backend</h3>
+                    <p class="text-xs text-gray-400">Konfigurasi endpoint Google Forms dan aturan ujian</p>
+                </div>
+            </div>
+
+            <div class="space-y-6 text-xs text-gray-300">
+
+                <!-- Cloud Integration Setup -->
+                <div class="p-4 rounded-2xl bg-cyber-dark/80 border border-cyber-border space-y-3">
+                    <h4 class="font-bold text-cyber-accent text-sm flex items-center gap-2">
+                        <i data-lucide="cloud" class="w-4 h-4"></i> Integrasi Google Forms (Pengumpulan Otomatis)
+                    </h4>
+                    <p class="text-gray-400 leading-relaxed">
+                        Masukkan **URL Google Form (formResponse)** dan ID entri lapangan (entry.XXXXX) agar hasil ujian siswa tersimpan otomatis ke Google Sheets milik Anda.
+                    </p>
+
+                    <div>
+                        <label class="block font-semibold text-gray-300 mb-1">Google Form Action Response URL</label>
+                        <input type="text" id="cfg-form-url" placeholder="https://docs.google.com/forms/d/e/1FAIpQLSc.../formResponse" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2.5 text-white font-mono text-xs focus:outline-none focus:border-cyber-accent">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Entry ID: Nama Siswa</label>
+                            <input type="text" id="cfg-entry-name" placeholder="entry.123456789" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Entry ID: Kelas</label>
+                            <input type="text" id="cfg-entry-class" placeholder="entry.987654321" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Entry ID: Skor Akhir</label>
+                            <input type="text" id="cfg-entry-score" placeholder="entry.112233445" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Entry ID: Akurasi (%)</label>
+                            <input type="text" id="cfg-entry-accuracy" placeholder="entry.556677889" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Entry ID: Skor Integritas Anti-Cheat</label>
+                            <input type="text" id="cfg-entry-integrity" placeholder="entry.998877665" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Entry ID: Matriks Rincian CP</label>
+                            <input type="text" id="cfg-entry-cpbreakdown" placeholder="entry.334455667" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Rules Config -->
+                <div class="p-4 rounded-2xl bg-cyber-dark/80 border border-cyber-border space-y-3">
+                    <h4 class="font-bold text-cyber-accent text-sm flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4"></i> Aturan Ujian & Pengawasan
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Jumlah Soal per Sesi</label>
+                            <input type="number" id="cfg-question-count" value="15" min="5" max="35" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-400 mb-1">Waktu per Soal (Detik)</label>
+                            <input type="number" id="cfg-time-per-q" value="45" min="10" max="180" class="w-full bg-cyber-card border border-cyber-border rounded-xl p-2 text-white font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button onclick="saveTeacherConfig()" class="px-6 py-2.5 bg-cyber-accent text-black font-extrabold rounded-xl hover:bg-cyan-300 transition">
+                        Simpan & Terapkan Konfigurasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Notification Toast -->
+    <div id="toast-msg" class="hidden fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-cyber-card border border-cyber-accent text-white text-xs font-semibold shadow-2xl flex items-center gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4 text-cyber-accent"></i>
+        <span id="toast-text">Pesan notifikasi</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-4 border-t border-cyber-border/40 text-xs text-gray-500">
+        ChemQuest Pro &copy; 2026 - Platform Asesmen Harian Kimia Berbasis Cloud Integrasi
+    </footer>
+
+    <!-- JS LOGIC & BANK SOAL -->
+    <script>
+        // ==========================================
+        // 1. BANK SOAL LENGKAP (CP1 - CP7)
+        // ==========================================
+        const QUESTION_BANK = [
+            // CP1: Hakikat Ilmu Kimia, Metode Ilmiah, & Partikel
+            {
+                cp: "CP1",
+                cpTitle: "Materi & Partikel",
+                q: "Di antara pilihan berikut, manakah yang merupakan contoh perubahan kimia dalam kehidupan sehari-hari?",
+                options: ["Es batu mencair menjadi air", "Besi berkarat akibat kelembapan", "Gula larut dalam air hangat", "Kertas dipotong menjadi potongan kecil"],
+                answer: 1,
+                explanation: "Besi berkarat membentuk zat baru (oksida besi) melalui reaksi kimia, sedangkan pilihan lain hanya merupakan perubahan fisika."
+            },
+            {
+                cp: "CP1",
+                cpTitle: "Materi & Partikel",
+                q: "Kelompok zat berikut yang semuanya tergolong unsur adalah...",
+                options: ["Air, Udara, Tembaga", "Oksigen, Emas, Besi", "Garam, Gula, Alkohol", "Kuningan, Perunggu, Baja"],
+                answer: 1,
+                explanation: "Oksigen (O), Emas (Au), dan Besi (Fe) adalah zat tunggal sederhana yang tidak dapat diuraikan lagi secara kimia (Unsur)."
+            },
+            {
+                cp: "CP1",
+                cpTitle: "Materi & Partikel",
+                q: "Langkah pertama yang benar dalam metode ilmiah saat melakukan penelitian kimia adalah...",
+                options: ["Merumuskan hipotesis", "Melakukan eksperimen", "Menganalisis data", "Merumuskan masalah/observasi"],
+                answer: 3,
+                explanation: "Metode ilmiah diawali dengan identifikasi atau perumusan masalah berdasarkan fenomena hasil observasi."
+            },
+            {
+                cp: "CP1",
+                cpTitle: "Materi & Partikel",
+                q: "Simbol bahaya kimia gambar 'Tengkorak dan Tulang Bersilang' pada botol reagen menandakan bahwa bahan tersebut...",
+                options: ["Radioaktif", "Beracun (Toxic)", "Mudah Meledak", "Korosif"],
+                answer: 1,
+                explanation: "Simbol tengkorak digunakan secara internasional untuk menandakan bahan kimia bersifat beracun/toksik."
+            },
+            {
+                cp: "CP1",
+                cpTitle: "Materi & Partikel",
+                q: "Partikel penyusun materi yang bersifat netral dan berada dalam inti atom adalah...",
+                options: ["Proton", "Elektron", "Neutron", "Positron"],
+                answer: 2,
+                explanation: "Neutron adalah partikel netral (tanpa muatan) yang terletak di inti atom bersama proton."
+            },
+
+            // CP2: Perkembangan Model Atom & Struktur Atom
+            {
+                cp: "CP2",
+                cpTitle: "Perkembangan Model Atom",
+                q: "Model atom yang menggambarkan atom sebagai bola pejal positif dengan elektron tersebar di dalamnya seperti 'roti kismis' dikemukakan oleh...",
+                options: ["John Dalton", "J.J. Thomson", "Ernest Rutherford", "Niels Bohr"],
+                answer: 1,
+                explanation: "J.J. Thomson menemukan elektron dan mengusulkan model atom roti kismis."
+            },
+            {
+                cp: "CP2",
+                cpTitle: "Perkembangan Model Atom",
+                q: "Kelemahan utama model atom Rutherford yang disempurnakan oleh Niels Bohr adalah...",
+                options: ["Belum menemukan neutron", "Tidak dapat menjelaskan mengapa elektron tidak jatuh ke inti atom", "Menganggap atom sebagai bola pejal", "Tidak memperhitungkan muatan positif"],
+                answer: 1,
+                explanation: "Bohr menyempurnakan Rutherford dengan mengusulkan bahwa elektron beredar pada lintasan/tingkat energi tertentu sehingga tidak jatuh ke inti."
+            },
+            {
+                cp: "CP2",
+                cpTitle: "Perkembangan Model Atom",
+                q: "Percobaan penembakan lempeng emas tipis dengan partikel alfa oleh Rutherford membuktikan bahwa...",
+                options: ["Atom sebagian besar berupa ruang kosong dengan inti yang sangat kecil dan padat", "Elektron berada dalam orbital awan", "Atom tidak dapat dibagi lagi", "Massa atom tersebar merata di seluruh bagian"],
+                answer: 0,
+                explanation: "Sebagian besar partikel alfa diteruskan membuktikan bahwa atom terdiri dari ruang kosong dengan inti bermuatan positif di pusatnya."
+            },
+            {
+                cp: "CP2",
+                cpTitle: "Perkembangan Model Atom",
+                q: "Model atom mekanika kuantum mendefinisikan orbital sebagai...",
+                options: ["Lintasan lingkaran pasti dari elektron", "Daerah kebolehhitungan (probabilitas) terbesar ditemukannya elektron", "Garis spektrum warna emisi", "Jarak konstan elektron ke inti"],
+                answer: 1,
+                explanation: "Dalam mekanika kuantum (Heisenberg/Schrödinger), kedudukan elektron tidak dapat dipastikan melainkan berupa probabilitas (orbital)."
+            },
+            {
+                cp: "CP2",
+                cpTitle: "Perkembangan Model Atom",
+                q: "Tokoh yang mengemukakan hipotesis bahwa gelombang memiliki sifat partikel dan partikel dapat bersifat gelombang adalah...",
+                options: ["Louis de Broglie", "Max Planck", "Albert Einstein", "Werner Heisenberg"],
+                answer: 0,
+                explanation: "Louis de Broglie mengemukakan dualisme gelombang-partikel pada materi."
+            },
+
+            // CP3: Proton, Neutron, Elektron, Ion & Isotop
+            {
+                cp: "CP3",
+                cpTitle: "Notasi Atom & Isotop",
+                q: "Suatu atom netral memiliki Nomor Atom 19 dan Nomor Massa 39. Jumlah proton, elektron, dan neutron atom tersebut berturut-turut adalah...",
+                options: ["19, 19, 20", "19, 20, 19", "20, 19, 19", "19, 19, 39"],
+                answer: 0,
+                explanation: "Proton = Z = 19; Elektron (netral) = 19; Neutron = A - Z = 39 - 19 = 20."
+            },
+            {
+                cp: "CP3",
+                cpTitle: "Notasi Atom & Isotop",
+                q: "Ion Ca²⁺ (Nomor Atom 20, Nomor Massa 40) memiliki jumlah elektron sebanyak...",
+                options: ["20", "22", "18", "40"],
+                answer: 2,
+                explanation: "Ion Ca²⁺ melepas 2 elektron dari keadaan netralnya (20). Elektron = 20 - 2 = 18."
+            },
+            {
+                cp: "CP3",
+                cpTitle: "Notasi Atom & Isotop",
+                q: "Pasangan unsur C-12 (⁶C¹²) dan C-14 (⁶C¹⁴) merupakan contoh dari...",
+                options: ["Isotop", "Isobar", "Isoton", "Isoelektron"],
+                answer: 0,
+                explanation: "Isotop adalah atom-atom dari unsur yang sama (nomor atom sama) tetapi memiliki nomor massa yang berbeda."
+            },
+            {
+                cp: "CP3",
+                cpTitle: "Notasi Atom & Isotop",
+                q: "Pasangan spesi berikut yang tergolong Isobar adalah...",
+                options: ["⁶C¹⁴ dan ⁷N¹⁴", "⁶C¹² dan ⁶C¹³", "₁₁Na²³ dan ₁₂Mg²⁴", "₈O¹⁶ dan ₉F¹⁹"],
+                answer: 0,
+                explanation: "Isobar memiliki nomor massa (A) yang sama tetapi nomor atom (Z) berbeda (sama-sama 14)."
+            },
+            {
+                cp: "CP3",
+                cpTitle: "Notasi Atom & Isotop",
+                q: "Ion Cl⁻ (Nomor atom 17, Massa 35) memiliki konfigurasi jumlah partikel...",
+                options: ["p = 17, e = 18, n = 18", "p = 18, e = 17, n = 18", "p = 17, e = 16, n = 18", "p = 17, e = 17, n = 18"],
+                answer: 0,
+                explanation: "Cl⁻ menerima 1 elektron. Proton = 17, Elektron = 17 + 1 = 18, Neutron = 35 - 17 = 18."
+            },
+
+            // CP4: Konfigurasi Elektron & Kestabilan Atom
+            {
+                cp: "CP4",
+                cpTitle: "Konfigurasi Elektron",
+                q: "Konfigurasi elektron Bohr untuk atom Potassium/Kalium (₁₉K) pada keadaan dasar adalah...",
+                options: ["2, 8, 9", "2, 8, 8, 1", "2, 8, 7, 2", "2, 10, 7"],
+                answer: 1,
+                explanation: "Sesuai aturan pengisian kulit Bohr: Kulit K=2, L=8, M=8, N=1."
+            },
+            {
+                cp: "CP4",
+                cpTitle: "Konfigurasi Elektron",
+                q: "Jumlah elektron valensi dari unsur dengan nomor atom 15 (Fosfor) adalah...",
+                options: ["3", "5", "7", "8"],
+                answer: 1,
+                explanation: "Konfigurasi elektron ₁₅P = 2, 8, 5. Elektron valensinya adalah 5."
+            },
+            {
+                cp: "CP4",
+                cpTitle: "Konfigurasi Elektron",
+                q: "Unsur Unsur X dengan nomor atom 26 (Besi) memiliki konfigurasi elektron subkulit berakhir di...",
+                options: ["3d⁶ 4s²", "3d⁵ 4s¹", "4s² 4p⁶", "3d⁸"],
+                answer: 0,
+                explanation: "₁₆Fe: [Ar] 4s² 3d⁶ atau disingkat berakhir pada 3d⁶ 4s²."
+            },
+            {
+                cp: "CP4",
+                cpTitle: "Konfigurasi Elektron",
+                q: "Atom gas mulia stabil karena memiliki elektron valensi octet (8 elektron) kecuali Helium yang stabil dengan oktet/duplet yaitu...",
+                options: ["Duplet (2 elektron)", "Kuartet (4 elektron)", "Sextet (6 elektron)", "Triplet (3 elektron)"],
+                answer: 0,
+                explanation: "Helium memiliki 2 elektron pada kulit pertama K (Aturan Duplet)."
+            },
+            {
+                cp: "CP4",
+                cpTitle: "Konfigurasi Elektron",
+                q: "Agar mencapai kestabilan octet, atom Aluminium (₁₃Al) cenderung untuk...",
+                options: ["Menerima 3 elektron membentuk Al³⁻", "Melepas 3 elektron membentuk Al³⁺", "Melepas 1 elektron membentuk Al⁺", "Menerima 5 elektron"],
+                answer: 1,
+                explanation: "₁₃Al memiliki konfigurasi 2, 8, 3. Lebih mudah melepas 3 elektron valensinya membentuk ion positif Al³⁺."
+            },
+
+            // CP5: Tabel Periodik & Sifat Keperiodikan Unsur
+            {
+                cp: "CP5",
+                cpTitle: "Tabel Periodik & Sifat",
+                q: "Unsur yang terletak pada Golongan VA dan Periode 3 dalam Sistem Periodik Unsur memiliki nomor atom...",
+                options: ["13", "15", "17", "33"],
+                answer: 1,
+                explanation: "Periode 3 = 3 kulit (2, 8, x). Golongan VA = 5 elektron valensi. Maka Z = 2 + 8 + 5 = 15 (Fosfor)."
+            },
+            {
+                cp: "CP5",
+                cpTitle: "Tabel Periodik & Sifat",
+                q: "Dalam satu periode dari kiri ke kanan pada tabel periodik, kecenderungan jari-jari atom adalah...",
+                options: ["Semakin besar", "Semakin kecil", "Tetap sama", "Tidak teratur"],
+                answer: 1,
+                explanation: "Dari kiri ke kanan, muatan inti bertambah sehingga daya tarik inti terhadap elektron makin kuat, menyebabkan jari-jari atom makin kecil."
+            },
+            {
+                cp: "CP5",
+                cpTitle: "Tabel Periodik & Sifat",
+                q: "Sifat keperiodikan yang menyatakan besarnya energi yang dibebaskan ketika suatu atom netral menerima elektron adalah...",
+                options: ["Energi Ionisasi", "Keelektronegatifan", "Afinitas Elektron", "Jari-jari Atom"],
+                answer: 2,
+                explanation: "Afinitas elektron adalah energi yang dilepas/diserap saat atom netral wujud gas menangkap satu elektron."
+            },
+            {
+                cp: "CP5",
+                cpTitle: "Tabel Periodik & Sifat",
+                q: "Unsur yang paling elektronegatif dalam sistem periodik unsur adalah...",
+                options: ["Fransium (Fr)", "Fluorin (F)", "Oksigen (O)", "Klorin (Cl)"],
+                answer: 1,
+                explanation: "Fluorin (F) berada di kanan atas (Golongan VIIA) memiliki nilai keelektronegatifan tertinggi (4.0)."
+            },
+            {
+                cp: "CP5",
+                cpTitle: "Tabel Periodik & Sifat",
+                q: "Unsur-unsur yang terletak dalam satu golongan pada tabel periodik memiliki kesamaan dalam hal...",
+                options: ["Jumlah kulit elektron", "Jumlah elektron valensi", "Nomor massa", "Jari-jari atom"],
+                answer: 1,
+                explanation: "Unsur se-golongan memiliki jumlah elektron valensi yang sama sehingga memiliki sifat kimia mirip."
+            },
+
+            // CP6: Kecenderungan Ikatan Kimia (Ionik & Kovalen)
+            {
+                cp: "CP6",
+                cpTitle: "Ikatan Kimia",
+                q: "Ikatan yang terbentuk akibat serah terima elektron antara unsur logam dan non-logam disebut...",
+                options: ["Ikatan Kovalen Murni", "Ikatan Ion (Elektrovalen)", "Ikatan Logam", "Ikatan Hidrogen"],
+                answer: 1,
+                explanation: "Ikatan ion terjadi karena adanya transfer/serah terima elektron dari atom bermuatan positif (logam) ke negatif (nonlogam)."
+            },
+            {
+                cp: "CP6",
+                cpTitle: "Ikatan Kimia",
+                q: "Molekul garam dapur (NaCl) dapat menghantarkan arus listrik dalam bentuk...",
+                options: ["Padatan saja", "Lelehan dan Larutan", "Padatan dan Gas", "Hanya saat wujud kristal"],
+                answer: 1,
+                explanation: "Senyawa ion NaCl menghantarkan listrik saat berbentuk lelehan/leburan atau larutan dalam air karena ion-ionnya dapat bergerak bebas."
+            },
+            {
+                cp: "CP6",
+                cpTitle: "Ikatan Kimia",
+                q: "Pasangan senyawa berikut yang seluruhnya berikatan kovalen adalah...",
+                options: ["NaCl dan HCl", "H₂O dan CO₂", "KCl dan CH₄", "MgCl₂ dan NH₃"],
+                answer: 1,
+                explanation: "Air (H₂O) dan Karbon dioksida (CO₂) terbentuk dari sesama unsur non-logam dengan pemakaian bersama pasangan elektron (Kovalen)."
+            },
+            {
+                cp: "CP6",
+                cpTitle: "Ikatan Kimia",
+                q: "Jumlah pasangan elektron ikatan (PEI) pada molekul air (H₂O) adalah...",
+                options: ["1", "2", "3", "4"],
+                answer: 1,
+                explanation: "Atom O membentuk 2 ikatan tunggal kovalen dengan 2 atom H, sehingga terdapat 2 pasang elektron ikatan (PEI)."
+            },
+            {
+                cp: "CP6",
+                cpTitle: "Ikatan Kimia",
+                q: "Senyawa dengan ikatan kovalen koordinasi ditandai dengan...",
+                options: ["Pasangan elektron ikatan berasal dari kedua atom yang berikatan", "Pasangan elektron ikatan hanya berasal dari salah satu atom yang berikatan", "Terjadinya pemindahan proton", "Gaya tarik antar kutub permanen"],
+                answer: 1,
+                explanation: "Kovalen koordinasi (dative) terjadi jika PEI disumbangkan oleh hanya salah satu atom penyusunnya."
+            },
+
+            // CP7: Struktur Partikel, Sifat Zat & Fenomena Sehari-hari
+            {
+                cp: "CP7",
+                cpTitle: "Sifat Zat & Fenomena",
+                q: "Alasan mengapa es dapat mengapung di atas air adalah karena...",
+                options: ["Es memiliki suhu yang lebih tinggi daripada air", "Massa jenis es lebih kecil dibanding air akibat struktur kristal ikatan hidrogen yang terbuka", "Es mengandung gas oksigen terperangkap", "Air bersifat polar sedangkan es non-polar"],
+                answer: 1,
+                explanation: "Saat membeku, ikatan hidrogen air membentuk struktur kaku terbuka berongga yang menurunkan densitas/massa jenis es."
+            },
+            {
+                cp: "CP7",
+                cpTitle: "Sifat Zat & Fenomena",
+                q: "Senyawa kovalen polar seperti cuka (CH₃COOH) dapat larut sempurna dalam air karena prinsip...",
+                options: ["Like dissolves like (zat polar larut dalam pelarut polar)", "Hukum Avogadro", "Perbedaan massa jenis", "Gaya dipol terimbas"],
+                answer: 0,
+                explanation: "Prinsip 'Like Dissolves Like' menyatakan pelarut polar larut dalam zat polar, begitupun sebaliknya untuk non-polar."
+            },
+            {
+                cp: "CP7",
+                cpTitle: "Sifat Zat & Fenomena",
+                q: "Titik didih air (H₂O) yang jauh lebih tinggi dibanding senyawa se-golongannya (H₂S) disebabkan oleh adanya...",
+                options: ["Ikatan Kovalen Tunggal", "Gaya London", "Ikatan Hidrogen Antarmolekul", "Gaya Van der Waals"],
+                answer: 2,
+                explanation: "Antara molekul H₂O terdapat ikatan hidrogen yang sangat kuat sehingga membutuhkan energi tinggi untuk memutuskannya (titik didih tinggi)."
+            },
+            {
+                cp: "CP7",
+                cpTitle: "Sifat Zat & Fenomena",
+                q: "Logam tembaga (Cu) dapat ditempa dan menghantarkan listrik dengan sangat baik karena...",
+                options: ["Adanya elektron valensi yang bergerak bebas dalam lautan elektron", "Struktur molekul yang rapuh", "Ikatan ionik yang kaku", "Gaya tarik antar dipol"],
+                answer: 0,
+                explanation: "Ikatan logam terdiri dari kation logam dalam 'lautan elektron' yang bebas bergerak membawa muatan listrik."
+            },
+            {
+                cp: "CP7",
+                cpTitle: "Sifat Zat & Fenomena",
+                q: "Fenomena kapilaritas naik air pada pembuluh kayu tanaman dimungkinkan oleh sifat...",
+                options: ["Gaya adhesi dan kohesi air akibat ikatan hidrogen", "Sifat asam basa air", "Proses elektrolisis air", "Massa molar air yang kecil"],
+                answer: 0,
+                explanation: "Kohesi (antar molekul air) dan Adhesi (air dengan dinding pembuluh) memungkinkan efek kapilaritas."
+            }
+        ];
+
+        // ==========================================
+        // 2. STATE APLIKASI
+        // ==========================================
+        let appState = {
+            studentName: '',
+            studentClass: '',
+            activeQuestions: [],
+            currentQIndex: 0,
+            score: 0,
+            lives: 3,
+            streak: 0,
+            maxStreak: 0,
+            answers: [], // { question, selected, correct, isCorrect }
+            timer: null,
+            timePerQ: 45,
+            timeLeft: 45,
+            startTime: null,
+            endTime: null,
+            cheatCount: 0,
+            soundMuted: false,
+            
+            // Configuration for Google Forms Endpoint
+            googleFormUrl: '',
+            entryName: '',
+            entryClass: '',
+            entryScore: '',
+            entryAccuracy: '',
+            entryIntegrity: '',
+            entryCpBreakdown: ''
+        };
+
+        // Web Audio API Synthesizer
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (appState.soundMuted) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now); // A3
+                    osc.frequency.exponentialRampToValueAtTime(130, now + 0.2);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'click') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'victory') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1);
+                    osc.frequency.setValueAtTime(659.25, now + 0.2);
+                    osc.frequency.setValueAtTime(880, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                }
+            } catch (e) {
+                console.log("Audio Error:", e);
+            }
+        }
+
+        function toggleSound() {
+            appState.soundMuted = !appState.soundMuted;
+            const icon = document.getElementById('sound-icon');
+            if (appState.soundMuted) {
+                icon.setAttribute('data-lucide', 'volume-x');
+                showToast("Suara Diheningkan");
+            } else {
+                icon.setAttribute('data-lucide', 'volume-2');
+                playSound('click');
+                showToast("Suara Diaktifkan");
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // 3. PROCTORING & ANTI-CHEATING
+        // ==========================================
+        function initProctoring() {
+            // Block Context Menu & Copy Paste
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            document.addEventListener('keydown', e => {
+                if (
+                    e.key === 'F12' || 
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+                    (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 'c' || e.key === 'C'))
+                ) {
+                    e.preventDefault();
+                    triggerCheatViolation("Membuka shortcut keyboard/Inspect Element terdeteksi!");
+                }
+            });
+
+            // Tab Switching Detection
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && document.getElementById('screen-quiz').classList.contains('hidden') === false) {
+                    triggerCheatViolation("Beralih Tab / Aplikasi terdeteksi!");
+                }
+            });
+
+            window.addEventListener('blur', () => {
+                if (document.getElementById('screen-quiz').classList.contains('hidden') === false) {
+                    triggerCheatViolation("Kehilangan Fokus Layar Ujian!");
+                }
+            });
+        }
+
+        function triggerCheatViolation(reason) {
+            appState.cheatCount++;
+            playSound('wrong');
+            
+            // Show modal warning
+            const modal = document.getElementById('proctor-warning-modal');
+            const msg = document.getElementById('proctor-warning-msg');
+            msg.innerText = `${reason} (Pelanggaran ke-${appState.cheatCount})`;
+            modal.classList.remove('hidden');
+
+            updateIntegrityBadge();
+        }
+
+        function resumeExam() {
+            playSound('click');
+            document.getElementById('proctor-warning-modal').classList.add('hidden');
+            // Try Request Fullscreen
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        }
+
+        function calculateIntegrityScore() {
+            let score = 100 - (appState.cheatCount * 15);
+            return Math.max(0, score);
+        }
+
+        function updateIntegrityBadge() {
+            const badge = document.getElementById('integrity-status-tag');
+            const score = calculateIntegrityScore();
+            badge.innerHTML = `<i data-lucide="shield-alert" class="w-4 h-4"></i> Integritas: ${score}% (${appState.cheatCount} Violations)`;
+            if (score < 70) {
+                badge.className = "text-xs text-red-400 font-bold flex items-center gap-1 animate-pulse";
+            } else {
+                badge.className = "text-xs text-emerald-400 font-medium flex items-center gap-1";
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // 4. ALUR UJIAN & GAMIFIKASI
+        // ==========================================
+        function startAssessment() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            const classInput = document.getElementById('student-class').value.trim();
+
+            if (!nameInput || !classInput) {
+                alert("Harap masukkan Nama Lengkap dan Kelas terlebih dahulu!");
+                return;
+            }
+
+            appState.studentName = nameInput;
+            appState.studentClass = classInput;
+            appState.score = 0;
+            appState.lives = 3;
+            appState.streak = 0;
+            appState.maxStreak = 0;
+            appState.answers = [];
+            appState.currentQIndex = 0;
+            appState.cheatCount = 0;
+            appState.startTime = new Date();
+
+            // Shuffle Question Bank & Pick subset
+            const qCount = parseInt(document.getElementById('cfg-question-count')?.value || 15);
+            let shuffled = [...QUESTION_BANK].sort(() => 0.5 - Math.random());
+            appState.activeQuestions = shuffled.slice(0, qCount);
+
+            // Transition UI
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+
+            // Fullscreen attempt
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+
+            playSound('click');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = appState.activeQuestions[appState.currentQIndex];
+            
+            // Reset state per question
+            document.getElementById('question-cp-tag').innerText = `${q.cp}: ${q.cpTitle}`;
+            document.getElementById('question-progress-text').innerText = `Soal ${appState.currentQIndex + 1} dari ${appState.activeQuestions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            // Render Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const expBox = document.getElementById('explanation-box');
+            expBox.classList.add('hidden');
+
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = true;
+            nextBtn.className = "px-6 py-2.5 bg-gray-700 text-gray-400 font-bold rounded-xl transition flex items-center gap-2 cursor-not-allowed";
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-2xl bg-cyber-dark/60 hover:bg-cyber-card border border-cyber-border hover:border-cyber-accent/50 text-sm font-semibold text-gray-200 transition flex items-center gap-3 group";
+                btn.onclick = () => selectAnswer(idx);
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-xl bg-cyber-card border border-cyber-border group-hover:border-cyber-accent text-cyber-accent flex items-center justify-center text-xs font-bold shrink-0">
+                        ${String.fromCharCode(65 + idx)}
+                    </span>
+                    <span class="flex-grow">${opt}</span>
+                `;
+                container.appendChild(btn);
+            });
+
+            // HUD Stats
+            document.getElementById('lives-count').innerText = appState.lives;
+            document.getElementById('streak-count').innerText = `${appState.streak}x Combo`;
+
+            // Timer setup
+            clearInterval(appState.timer);
+            appState.timeLeft = parseInt(document.getElementById('cfg-time-per-q')?.value || 45);
+            updateTimerDisplay();
+            appState.timer = setInterval(() => {
+                appState.timeLeft--;
+                updateTimerDisplay();
+                if (appState.timeLeft <= 0) {
+                    clearInterval(appState.timer);
+                    selectAnswer(-1); // Timeout penalty
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            const mins = Math.floor(appState.timeLeft / 60);
+            const secs = appState.timeLeft % 60;
+            display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            if (appState.timeLeft <= 10) {
+                display.className = "font-mono font-bold text-red-400 text-base animate-ping";
+            } else {
+                display.className = "font-mono font-bold text-white text-base";
+            }
+        }
+
+        function selectAnswer(selectedIndex) {
+            clearInterval(appState.timer);
+
+            const q = appState.activeQuestions[appState.currentQIndex];
+            const isCorrect = selectedIndex === q.answer;
+
+            // Log answer
+            appState.answers.push({
+                question: q,
+                selected: selectedIndex,
+                correct: q.answer,
+                isCorrect: isCorrect
+            });
+
+            const container = document.getElementById('options-container');
+            const buttons = container.querySelectorAll('button');
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.answer) {
+                    btn.className = "w-full text-left p-4 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500 text-sm font-semibold text-emerald-300 transition flex items-center gap-3";
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.className = "w-full text-left p-4 rounded-2xl bg-red-500/20 border-2 border-red-500 text-sm font-semibold text-red-300 transition flex items-center gap-3";
+                } else {
+                    btn.className = "w-full text-left p-4 rounded-2xl bg-cyber-dark/30 border border-cyber-border/40 text-sm font-semibold text-gray-500 opacity-50";
+                }
+            });
+
+            if (isCorrect) {
+                playSound('correct');
+                appState.score += (10 + (appState.streak * 2));
+                appState.streak++;
+                if (appState.streak > appState.maxStreak) appState.maxStreak = appState.streak;
+            } else {
+                playSound('wrong');
+                appState.streak = 0;
+                appState.lives--;
+            }
+
+            // Show explanation
+            const expBox = document.getElementById('explanation-box');
+            document.getElementById('explanation-text').innerText = q.explanation;
+            expBox.classList.remove('hidden');
+
+            // Enable Next
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = false;
+            nextBtn.className = "px-6 py-2.5 bg-cyber-accent text-black font-extrabold rounded-xl transition hover:bg-cyan-300 flex items-center gap-2 shadow-lg shadow-cyber-accent/20";
+
+            document.getElementById('lives-count').innerText = appState.lives;
+            document.getElementById('streak-count').innerText = `${appState.streak}x Combo`;
+
+            if (appState.lives <= 0) {
+                setTimeout(() => finishAssessment(), 1200);
+            }
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            appState.currentQIndex++;
+            if (appState.currentQIndex < appState.activeQuestions.length && appState.lives > 0) {
+                loadQuestion();
+            } else {
+                finishAssessment();
+            }
+        }
+
+        function finishAssessment() {
+            clearInterval(appState.timer);
+            appState.endTime = new Date();
+
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            playSound('victory');
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            renderResults();
+        }
+
+        // ==========================================
+        // 5. PENILAIAN, MATRIKS CP, & REPORTING
+        // ==========================================
+        function renderResults() {
+            document.getElementById('result-student-info').innerText = `Siswa: ${appState.studentName} | Kelas: ${appState.studentClass}`;
+            
+            const totalQ = appState.answers.length;
+            const correctCount = appState.answers.filter(a => a.isCorrect).length;
+            const wrongCount = totalQ - correctCount;
+            const accuracy = totalQ > 0 ? Math.round((correctCount / totalQ) * 100) : 0;
+            const integrity = calculateIntegrityScore();
+
+            // Time calculation
+            const durationSecs = Math.round((appState.endTime - appState.startTime) / 1000);
+            const mins = Math.floor(durationSecs / 60);
+            const secs = durationSecs % 60;
+
+            document.getElementById('final-score').innerText = appState.score;
+            document.getElementById('final-accuracy').innerText = `Akurasi Jawaban: ${accuracy}%`;
+            document.getElementById('stat-correct-wrong').innerText = `${correctCount} Benar / ${wrongCount} Salah`;
+            document.getElementById('stat-max-streak').innerText = `${appState.maxStreak}x`;
+            document.getElementById('stat-integrity').innerText = `${integrity}% (${appState.cheatCount} Pelanggaran)`;
+            document.getElementById('stat-duration').innerText = `${mins}m ${secs}s`;
+
+            // Render CP Matrix Table
+            const cpStats = {};
+            // Init CP1-CP7
+            for (let i = 1; i <= 7; i++) {
+                cpStats[`CP${i}`] = { total: 0, correct: 0, title: '' };
+            }
+
+            appState.answers.forEach(ans => {
+                const cp = ans.question.cp;
+                if (!cpStats[cp]) cpStats[cp] = { total: 0, correct: 0, title: ans.question.cpTitle };
+                cpStats[cp].total++;
+                cpStats[cp].title = ans.question.cpTitle;
+                if (ans.isCorrect) cpStats[cp].correct++;
+            });
+
+            const tbody = document.getElementById('cp-matrix-tbody');
+            tbody.innerHTML = '';
+
+            Object.keys(cpStats).forEach(cpKey => {
+                const item = cpStats[cpKey];
+                if (item.total > 0) {
+                    const pct = Math.round((item.correct / item.total) * 100);
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-cyber-dark/40";
+                    tr.innerHTML = `
+                        <td class="p-3 font-bold text-cyber-accent">${cpKey}</td>
+                        <td class="p-3">${item.title}</td>
+                        <td class="p-3 text-center">${item.total}</td>
+                        <td class="p-3 text-center text-emerald-400 font-bold">${item.correct}</td>
+                        <td class="p-3 text-right font-mono font-bold ${pct >= 75 ? 'text-emerald-400' : 'text-amber-400'}">${pct}%</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            // Render Review List
+            const reviewContainer = document.getElementById('review-list-container');
+            reviewContainer.innerHTML = '';
+
+            appState.answers.forEach((ans, idx) => {
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-2xl border ${ans.isCorrect ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5'} space-y-2 text-xs`;
+                
+                const selectedText = ans.selected >= 0 ? ans.question.options[ans.selected] : "Tidak Dijawab (Waktu Habis)";
+                const correctText = ans.question.options[ans.correct];
+
+                item.innerHTML = `
+                    <div class="flex justify-between font-bold">
+                        <span class="${ans.isCorrect ? 'text-emerald-400' : 'text-red-400'}">Soal ${idx + 1} (${ans.question.cp}) - ${ans.isCorrect ? 'BENAR' : 'SALAH'}</span>
+                    </div>
+                    <p class="text-white font-semibold text-sm">${ans.question.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-300 pt-1">
+                        <div>Jawaban Anda: <span class="${ans.isCorrect ? 'text-emerald-300 font-bold' : 'text-red-300 font-bold'}">${selectedText}</span></div>
+                        <div>Kunci Jawaban: <span class="text-emerald-400 font-bold">${correctText}</span></div>
+                    </div>
+                    <p class="text-gray-400 italic pt-1 border-t border-cyber-border/40">Pembahasan: ${ans.question.explanation}</p>
+                `;
+                reviewContainer.appendChild(item);
+            });
+        }
+
+        // ==========================================
+        // 6. INTEGRASI CLOUD GOOGLE FORMS SUBMIT
+        // ==========================================
+        function submitToGoogleForm() {
+            if (!appState.googleFormUrl) {
+                alert("Pengaturan Google Form belum dikonfigurasi oleh Guru.\n\nMemuka Panel Guru untuk mengatur URL Form dan Field Entry ID...");
+                openTeacherModal();
+                return;
+            }
+
+            const btn = document.getElementById('send-teacher-btn');
+            btn.disabled = true;
+            btn.innerText = "Mengirim Data ke Cloud...";
+
+            const totalQ = appState.answers.length;
+            const correctCount = appState.answers.filter(a => a.isCorrect).length;
+            const accuracy = totalQ > 0 ? Math.round((correctCount / totalQ) * 100) : 0;
+            const integrity = calculateIntegrityScore();
+
+            // Prepare CP Matrix summary string
+            let cpBreakdownStr = appState.answers.map(a => `${a.question.cp}:${a.isCorrect?1:0}`).join(",");
+
+            const formData = new FormData();
+            if (appState.entryName) formData.append(appState.entryName, appState.studentName);
+            if (appState.entryClass) formData.append(appState.entryClass, appState.studentClass);
+            if (appState.entryScore) formData.append(appState.entryScore, appState.score);
+            if (appState.entryAccuracy) formData.append(appState.entryAccuracy, accuracy + '%');
+            if (appState.entryIntegrity) formData.append(appState.entryIntegrity, integrity + '%');
+            if (appState.entryCpBreakdown) formData.append(appState.entryCpBreakdown, cpBreakdownStr);
+
+            fetch(appState.googleFormUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            }).then(() => {
+                showToast("Hasil ujian berhasil dikirim ke Google Sheets Guru!");
+                btn.innerText = "Terikirim ✅";
+                btn.className = "px-6 py-3 bg-gray-700 text-emerald-400 font-bold text-sm rounded-xl cursor-default";
+            }).catch(err => {
+                alert("Gagal mengirim data otomatis: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Coba Kirim Ulang";
+            });
+        }
+
+        function exportCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Nama,Kelas,Skor,Akurasi,Integritas,Pelanggaran\n";
+            csvContent += `"${appState.studentName}","${appState.studentClass}",${appState.score},"${Math.round((appState.answers.filter(a=>a.isCorrect).length/appState.answers.length)*100)}%","${calculateIntegrityScore()}%",${appState.cheatCount}\n`;
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Hasil_ChemQuest_${appState.studentName.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ==========================================
+        // 7. CONFIG & TEACHER MODAL LOGIC
+        // ==========================================
+        function openTeacherModal() {
+            playSound('click');
+            document.getElementById('teacher-modal').classList.remove('hidden');
+        }
+
+        function closeTeacherModal() {
+            playSound('click');
+            document.getElementById('teacher-modal').classList.add('hidden');
+        }
+
+        function saveTeacherConfig() {
+            appState.googleFormUrl = document.getElementById('cfg-form-url').value.trim();
+            appState.entryName = document.getElementById('cfg-entry-name').value.trim();
+            appState.entryClass = document.getElementById('cfg-entry-class').value.trim();
+            appState.entryScore = document.getElementById('cfg-entry-score').value.trim();
+            appState.entryAccuracy = document.getElementById('cfg-entry-accuracy').value.trim();
+            appState.entryIntegrity = document.getElementById('cfg-entry-integrity').value.trim();
+            appState.entryCpBreakdown = document.getElementById('cfg-entry-cpbreakdown').value.trim();
+
+            // Save to LocalStorage
+            const configObj = {
+                formUrl: appState.googleFormUrl,
+                eName: appState.entryName,
+                eClass: appState.entryClass,
+                eScore: appState.entryScore,
+                eAcc: appState.entryAccuracy,
+                eInteg: appState.entryIntegrity,
+                eCp: appState.entryCpBreakdown
+            };
+            localStorage.setItem('chemquest_config', JSON.stringify(configObj));
+
+            updateCloudBadge();
+            closeTeacherModal();
+            showToast("Konfigurasi Guru Disimpan!");
+        }
+
+        function loadTeacherConfig() {
+            const saved = localStorage.getItem('chemquest_config');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appState.googleFormUrl = parsed.formUrl || '';
+                    appState.entryName = parsed.eName || '';
+                    appState.entryClass = parsed.eClass || '';
+                    appState.entryScore = parsed.eScore || '';
+                    appState.entryAccuracy = parsed.eAcc || '';
+                    appState.entryIntegrity = parsed.eInteg || '';
+                    appState.entryCpBreakdown = parsed.eCp || '';
+
+                    // Populate modal inputs
+                    document.getElementById('cfg-form-url').value = appState.googleFormUrl;
+                    document.getElementById('cfg-entry-name').value = appState.entryName;
+                    document.getElementById('cfg-entry-class').value = appState.entryClass;
+                    document.getElementById('cfg-entry-score').value = appState.entryScore;
+                    document.getElementById('cfg-entry-accuracy').value = appState.entryAccuracy;
+                    document.getElementById('cfg-entry-integrity').value = appState.entryIntegrity;
+                    document.getElementById('cfg-entry-cpbreakdown').value = appState.entryCpBreakdown;
+
+                    updateCloudBadge();
+                } catch(e) {}
+            }
+        }
+
+        function updateCloudBadge() {
+            const badge = document.getElementById('cloud-status-badge');
+            if (appState.googleFormUrl) {
+                badge.className = "cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 transition";
+                badge.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <i data-lucide="cloud-check" class="w-3.5 h-3.5"></i>
+                    <span class="hidden md:inline">Terhubung dengan Google Forms</span>
+                `;
+            } else {
+                badge.className = "cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-semibold hover:bg-yellow-500/20 transition";
+                badge.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
+                    <i data-lucide="cloud-off" class="w-3.5 h-3.5"></i>
+                    <span class="hidden md:inline">Mode Lokal (Belum Terhubung Form)</span>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize App
+        window.onload = function() {
+            lucide.createIcons();
+            initProctoring();
+            loadTeacherConfig();
+        };
+    </script>
+</body>
+</html>
