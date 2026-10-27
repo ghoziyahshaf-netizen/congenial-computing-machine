@@ -93,17 +93,11 @@
                     <h1 class="font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-cyber-accent via-cyan-200 to-cyber-pink bg-clip-text text-transparent">
                         ChemQuest <span class="text-xs px-2 py-0.5 rounded bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/30 uppercase tracking-widest font-bold">Pro</span>
                     </h1>
-                    <p class="text-xs text-gray-400 hidden sm:block">Sistem Asesmen Harian Kimia (25 Soal Full)</p>
+                    <p class="text-xs text-gray-400 hidden sm:block">Sistem Asesmen Harian Kimia (Mode Tangkap Layar)</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2 md:gap-4">
-                <div id="cloud-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <i data-lucide="cloud-check" class="w-3.5 h-3.5"></i>
-                    <span class="hidden md:inline">Terhubung ke Database Guru</span>
-                </div>
-
                 <button id="sound-btn" onclick="toggleSound()" class="p-2 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-accent transition">
                     <i data-lucide="volume-2" id="sound-icon" class="w-5 h-5"></i>
                 </button>
@@ -208,21 +202,26 @@
             </div>
         </section>
 
-        <!-- SCREEN 3: Final Score & Submit -->
+        <!-- SCREEN 3: Final Score & Screenshot Card -->
         <section id="screen-result" class="hidden space-y-6">
-            <div class="cyber-glass rounded-3xl p-6 md:p-10 border border-cyber-border shadow-2xl text-center relative overflow-hidden">
+            <div class="cyber-glass rounded-3xl p-6 md:p-10 border-2 border-cyber-accent shadow-2xl text-center relative overflow-hidden">
+                <div class="bg-amber-500/20 border border-amber-500/40 text-amber-300 p-3 rounded-2xl mb-6 text-xs md:text-sm font-bold flex items-center justify-center gap-2">
+                    <i data-lucide="camera" class="w-5 h-5 animate-bounce"></i>
+                    <span>AMBIL SCREENSHOT / TANGKAP LAYAR HALAMAN INI DAN KIRIM KE GURU</span>
+                </div>
+
                 <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">
-                    Ujian Selesai
+                    Bukti Resmi Hasil Asesmen Kimia
                 </span>
 
-                <h2 class="text-3xl md:text-4xl font-black text-white mt-3">Hasil Evaluasi Pembelajaran</h2>
-                <p id="result-student-info" class="text-gray-400 text-sm mt-1">Siswa: - | Kelas: -</p>
+                <h2 id="result-student-name" class="text-3xl md:text-4xl font-black text-white mt-3">-</h2>
+                <p id="result-student-class" class="text-cyber-accent font-bold text-base mt-1">Kelas: -</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-8 items-center">
-                    <div class="cyber-glass p-6 rounded-2xl border border-cyber-accent/30 bg-gradient-to-b from-cyber-card to-cyber-dark flex flex-col items-center justify-center">
-                        <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">Skor Akhir</span>
-                        <div id="final-score" class="text-5xl md:text-6xl font-black text-cyber-accent tracking-tight">0</div>
-                        <span id="final-accuracy" class="text-xs text-gray-400 mt-2">Akurasi Jawaban: 0%</span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-6 items-center">
+                    <div class="cyber-glass p-6 rounded-2xl border border-cyber-accent/50 bg-gradient-to-b from-cyber-card to-cyber-dark flex flex-col items-center justify-center">
+                        <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">Nilai Ujian</span>
+                        <div id="final-score" class="text-6xl font-black text-cyber-accent tracking-tight">0</div>
+                        <span id="final-accuracy" class="text-xs text-gray-400 mt-2">Akurasi: 0%</span>
                     </div>
 
                     <div class="space-y-3 col-span-2">
@@ -236,27 +235,20 @@
                                 <span id="stat-max-streak" class="text-base font-bold text-amber-400">0x</span>
                             </div>
                             <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
-                                <span class="text-xs text-gray-400 block font-semibold">Integritas (Anti-Cheat)</span>
-                                <span id="stat-integrity" class="text-base font-bold text-emerald-400">100% (0 Pelanggaran)</span>
+                                <span class="text-xs text-gray-400 block font-semibold">Skor Integritas (Anti-Cheat)</span>
+                                <span id="stat-integrity" class="text-base font-bold text-emerald-400">100%</span>
                             </div>
                             <div class="p-3.5 rounded-xl bg-cyber-dark/60 border border-cyber-border text-left">
-                                <span class="text-xs text-gray-400 block font-semibold">Waktu Pengerjaan</span>
+                                <span class="text-xs text-gray-400 block font-semibold">Waktu Selesai</span>
                                 <span id="stat-duration" class="text-base font-bold text-cyan-300">00:00</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Submission Status Box -->
-                <div id="submit-status-box" class="p-4 rounded-xl bg-cyber-card border border-cyber-border mb-6">
-                    <p id="submit-status-text" class="text-sm font-semibold text-cyber-accent flex items-center justify-center gap-2">
-                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Mengirim hasil ujian ke database Guru...
-                    </p>
-                </div>
-
                 <div class="flex justify-center gap-4">
                     <button onclick="location.reload()" class="px-6 py-3 bg-cyber-card border border-cyber-border text-white font-bold rounded-xl hover:border-cyber-accent transition">
-                        Selesai / Ulangi Tes
+                        Ulangi Ujian
                     </button>
                 </div>
             </div>
@@ -269,19 +261,8 @@
         ChemQuest Pro &copy; Asesmen Harian Kimia Integratif Kurikulum Merdeka
     </footer>
 
-    <!-- GAME LOGIC & AUTOMATIC GOOGLE FORM SUBMIT SCRIPT -->
+    <!-- GAME LOGIC SCRIPT -->
     <script>
-        // KONFIGURASI GOOGLE FORM GURU
-        const gformConfig = {
-            formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScjPRZfl0BOi2oyZ8rzjLz4u_pmR-i0MaOhPFtYtcZoBlc_cA/formResponse?usp=sharing&ouid=116283760842598171139",
-            entryName: "entry.2069567566",
-            entryClass: "entry.1046826679",
-            entryScore: "entry.339607753",
-            entryAccuracy: "entry.1836128238",
-            entryCheat: "entry.1334909075",
-            entryDetail: "entry.1196923682"
-        };
-
         // BANK SOAL KIMIA (CP1 - CP7)
         const masterQuestions = [
             // CP1: Hakikat Materi & Partikel Penyusun
@@ -510,7 +491,6 @@
             const optionsContainer = document.getElementById('options-container');
             const buttons = optionsContainer.children;
 
-            // Nonaktifkan semua tombol pilihan agar tidak bisa diklik dua kali
             for (let btn of buttons) {
                 btn.onclick = null;
                 btn.classList.add('cursor-default');
@@ -533,7 +513,6 @@
                 if (index >= 0 && buttons[index]) {
                     buttons[index].className = "w-full text-left p-4 rounded-xl bg-red-500/20 border-2 border-red-500 text-sm md:text-base text-red-200 transition flex items-center justify-between";
                 }
-                // Tunjukkan jawaban yang benar
                 if (buttons[q.correct]) {
                     buttons[q.correct].className = "w-full text-left p-4 rounded-xl bg-emerald-500/20 border-2 border-emerald-500 text-sm md:text-base text-emerald-200 transition flex items-center justify-between";
                 }
@@ -552,7 +531,7 @@
             loadQuestion();
         }
 
-        // FINISH & SUBMIT RESULTS TO GOOGLE FORM
+        // FINISH & SHOW SCREENSHOT CARD
         function finishAssessment() {
             clearInterval(timer);
             endTime = Date.now();
@@ -564,7 +543,6 @@
             document.getElementById('screen-quiz').classList.add('hidden');
             document.getElementById('screen-result').classList.remove('hidden');
 
-            // Hitung statistik nilai
             let totalCorrect = 0;
             Object.values(cpStats).forEach(st => totalCorrect += st.correct);
 
@@ -572,66 +550,18 @@
             const finalScoreVal = Math.round((totalCorrect / currentQuestions.length) * 100);
             const integrityScore = Math.max(0, 100 - (cheatCount * 20));
 
-            document.getElementById('result-student-info').innerText = `Siswa: ${studentData.name} | Kelas: ${studentData.class}`;
+            document.getElementById('result-student-name').innerText = studentData.name;
+            document.getElementById('result-student-class').innerText = `Kelas: ${studentData.class}`;
             document.getElementById('final-score').innerText = finalScoreVal;
             document.getElementById('final-accuracy').innerText = `Akurasi Jawaban: ${accuracy}%`;
             document.getElementById('stat-correct-wrong').innerText = `${totalCorrect} Benar / ${currentQuestions.length - totalCorrect} Salah`;
             document.getElementById('stat-max-streak').innerText = `${maxStreak}x`;
-            document.getElementById('stat-integrity').innerText = `${integrityScore}% (${cheatCount} Violations)`;
+            document.getElementById('stat-integrity').innerText = `${integrityScore}% (${cheatCount} Pelanggaran)`;
             document.getElementById('stat-duration').innerText = durationStr;
 
-            // Trigger Confetti jika lulus
             if (accuracy >= 70 && typeof confetti === 'function') {
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             }
-
-            // Payload Data Ujian
-            const resultData = {
-                studentName: studentData.name,
-                studentClass: studentData.class,
-                finalScore: finalScoreVal,
-                accuracy: accuracy,
-                cheatCount: cheatCount,
-                integrityScore: integrityScore,
-                cpSummary: cpStats
-            };
-
-            // KIRIM OTOMATIS KE GOOGLE FORM GURU
-            submitToGoogleForm(resultData);
-        }
-
-        // FUNGSI PENGIRIMAN DATA KE GOOGLE FORM GURU (100% TEMBUS METODE URLSearchParams)
-        function submitToGoogleForm(examResult) {
-            const statusBox = document.getElementById('submit-status-text');
-
-            const params = new URLSearchParams();
-            params.append(gformConfig.entryName, examResult.studentName);
-            params.append(gformConfig.entryClass, examResult.studentClass);
-            params.append(gformConfig.entryScore, examResult.finalScore);
-            params.append(gformConfig.entryAccuracy, examResult.accuracy + "%");
-            params.append(gformConfig.entryCheat, examResult.integrityScore + "% (" + examResult.cheatCount + " Violations)");
-            params.append(gformConfig.entryDetail, JSON.stringify(examResult.cpSummary));
-
-            fetch(gformConfig.formUrl, {
-                method: "POST",
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: params.toString()
-            }).then(() => {
-                if (statusBox) {
-                    statusBox.className = "text-sm font-semibold text-emerald-400 flex items-center justify-center gap-2";
-                    statusBox.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i> Hasil ujian telah otomatis terkirim dan tersimpan di database Guru!`;
-                    if (window.lucide) lucide.createIcons();
-                }
-            }).catch(error => {
-                if (statusBox) {
-                    statusBox.className = "text-sm font-semibold text-amber-400 flex items-center justify-center gap-2";
-                    statusBox.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5"></i> Gagal koneksi otomatis. Harap capture layar ini ke Guru.`;
-                    if (window.lucide) lucide.createIcons();
-                }
-            });
         }
 
         function getCPTitle(cpCode) {
