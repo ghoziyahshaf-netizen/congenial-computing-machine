@@ -1375,5 +1375,46 @@
             loadTeacherConfig();
         };
     </script>
+
+        <!-- KODE INTEGRASI AUTOMATIS GOOGLE FORM GURU -->
+    <script>
+        // Konfigurasi terintegrasi langsung dari link Google Form milikmu
+        const gformConfig = {
+            formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScjPRZfl0BOi2oyZ8rzjLz4u_pmR-i0MaOhPFtYtcZoBlc_cA/formResponse",
+            entryName: "entry.2069567566",
+            entryClass: "entry.1046826679",
+            entryScore: "entry.3339607753",
+            entryAccuracy: "entry.1836128238",
+            entryCheat: "entry.1334909075",
+            entryDetail: "entry.1196923682"
+        };
+
+        // Fungsi Otomatis Mengirim Hasil Ujian Siswa ke Google Sheet Guru
+        function submitToGoogleForm(examResult) {
+            const formData = new FormData();
+            formData.append(gformConfig.entryName, examResult.studentName);
+            formData.append(gformConfig.entryClass, examResult.studentClass);
+            formData.append(gformConfig.entryScore, examResult.finalScore);
+            formData.append(gformConfig.entryAccuracy, examResult.accuracy + "%");
+            formData.append(gformConfig.entryCheat, examResult.integrityScore + "% (" + examResult.cheatCount + " Pelanggaran)");
+            formData.append(gformConfig.entryDetail, JSON.stringify(examResult.cpSummary));
+
+            fetch(gformConfig.formUrl, {
+                method: "POST",
+                mode: "no-cors",
+                body: formData
+            }).then(() => {
+                console.log("Data hasil ujian berhasil dikirim ke Google Sheets Guru!");
+                const statusBadge = document.getElementById("cloud-status-badge");
+                if (statusBadge) {
+                    statusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><i data-lucide="cloud-check" class="w-3.5 h-3.5"></i><span>Tersimpan di Cloud Guru</span>`;
+                    if (window.lucide) lucide.createIcons();
+                }
+            }).catch(error => {
+                console.error("Gagal mengirim data ke Google Form:", error);
+            });
+        }
+    </script>
 </body>
 </html>
